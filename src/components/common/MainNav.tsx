@@ -1,22 +1,19 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FaBars, FaTimes, FaGithub, FaInstagram } from "react-icons/fa";
 import { CgLogOut } from "react-icons/cg";
 import Login from "../auth/Login";
 import Logo from "/images/logo-main.svg";
+import { AuthContext } from "@/context/AuthContext.tsx";
+import {toast} from "sonner";
 
 export default function MainNav() {
-    const [isLoggedin, setIsLoggedin] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
-    // Check login state
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        setIsLoggedin(!!token);
-    }, []);
+    const { info, setInfo } = useContext(AuthContext);
 
     // Handle scroll
     useEffect(() => {
@@ -28,7 +25,8 @@ export default function MainNav() {
     // Handle logout
     const handleLogout = () => {
         localStorage.clear();
-        setIsLoggedin(false);
+        setInfo({ email: "", role: "" }); // Clear user info from context
+        toast.success("Logged Out Successfully!")
     };
 
     // Toggle mobile menu
@@ -40,15 +38,17 @@ export default function MainNav() {
     return (
         <div className="fixed min-w-full z-50">
             <nav
-                className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
-                    isScrolled ? "bg-white shadow-lg" : "bg-transparent"
-                }`}
+                className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${isScrolled ? "bg-white shadow-lg" : "bg-transparent"}`}
             >
                 <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
                     {/* Logo */}
                     <Link to="/" className="mr-3 w-1/8">
                         <img src={Logo} className="w-24 h-auto" alt="Nirlipta Yoga" />
                     </Link>
+
+                    {info?.email && info?.role && (
+                        <div className="text-gray-800 font-medium">{`${info?.email} (${info?.role})`}</div>
+                    )}
 
                     {/* Hamburger Icon */}
                     <button
@@ -59,11 +59,7 @@ export default function MainNav() {
                     </button>
 
                     {/* Main Navigation */}
-                    <div
-                        className={`lg:flex lg:items-center ${
-                            isMobileMenuOpen ? "block" : "hidden"
-                        } w-5/8`}
-                    >
+                    <div className={`lg:flex lg:items-center ${isMobileMenuOpen ? "block" : "hidden"} w-5/8`}>
                         <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
                             <Link
                                 to="/workshops"
@@ -118,7 +114,7 @@ export default function MainNav() {
 
                     {/* Login/Logout Button */}
                     <div className="mt-4 lg:mt-0 w-2/8">
-                        {isLoggedin ? (
+                        {info?.email && info?.role ? (
                             <Button
                                 variant="outline"
                                 onClick={handleLogout}
@@ -144,7 +140,6 @@ export default function MainNav() {
                 <Login
                     onClose={() => setIsDialogOpen(false)}
                     onLoginSuccess={() => {
-                        setIsLoggedin(true);
                         setIsDialogOpen(false);
                     }}
                 />

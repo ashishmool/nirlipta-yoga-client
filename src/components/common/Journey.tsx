@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState, useMemo } from "react";
 import fotoJourney from "../../assets/journey.jpg";
-import Signup from "@/components/auth/Signup.tsx";
-import Login from "@/components/auth/Login.tsx"; // Assuming you have a Login component
+import Signup from "@/components/auth/Signup";
+import Login from "@/components/auth/Login";
+import { UserInfoContext } from "@/context/UserInfoContext";
+import { AuthContext } from "@/context/AuthContext.tsx";
 
 const cards = [
     {
@@ -25,15 +27,18 @@ const cards = [
 ];
 
 const Journey: React.FC = () => {
-    const [isLogin, setIsLogin] = useState(false); // State to toggle between Login and Signup
+    const { isLoggedIn } = useContext(UserInfoContext);
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
-    const handleSwitchToLogin = () => {
-        setIsLogin(true); // Switch to login
-    };
+    const { info, setInfo } = useContext(AuthContext);
 
-    const handleSwitchToSignup = () => {
-        setIsLogin(false); // Switch to signup
-    };
+    // Conditional button to show Signup if info.email and info.role are valid
+    const authButton = useMemo(() => {
+        if (!info?.email && !info?.role) {
+            return <Signup />;
+        }
+        return null; // Return nothing if info is not valid
+    }, [info]);
 
     return (
         <section className="flex flex-col md:flex-row items-center justify-between mx-auto max-w-5xl px-4 py-20">
@@ -60,23 +65,21 @@ const Journey: React.FC = () => {
                     ))}
                 </ul>
 
-                {/* Adjusted Signup Form Container */}
-                <div className="flex justify-center md:justify-start mb-8 w-full">
-                    <div className="w-full max-w-md"> {/* Ensure it takes full width on smaller screens */}
-                        {/* Conditionally render Login or Signup */}
-                        {isLogin ? (
-                            <Login onClose={() => setIsLogin(false)} /> // Assuming you have an onClose prop in Login
-                        ) : (
-                            <Signup onSwitchToLogin={handleSwitchToLogin} />
-                        )}
-                    </div>
-                </div>
+                {/* Conditional Auth Button */}
+                {authButton}
+
+                {/* Login Modal */}
+                {showLoginModal && (
+                    <Login onClose={() => setShowLoginModal(false)} />
+                )}
             </div>
 
             {/* Image Section */}
             <div className="relative w-full max-w-md mt-10 md:mt-0">
                 <div className="absolute -top-6 left-0 text-xs opacity-70">
-                    <span className="block"><strong>Photo: Nivedita Pradhan | </strong>20.10.2024</span>
+                    <span className="block">
+                        <strong>Photo: Nivedita Pradhan | </strong>20.10.2024
+                    </span>
                 </div>
                 <div className="relative">
                     <div className="absolute top-16 -left-2 w-12 h-40 bg-gray-300 rounded-tr-[4rem]"></div>

@@ -1,21 +1,17 @@
 import { Button } from "@/components/ui/button";
-
-// AUTH
 import Signup from "./Signup";
 import Login from "./Login";
-
-// STATES
 import useJoinFormType from "@/lib/states/joinFormType";
 import useErrorAlert from "@/lib/states/errorAlert";
 import useSignupData from "@/lib/states/signupData";
+import { useUserInfo } from "@/context/UserInfoContext";
 
 export default function Auth() {
     const { setEmail, setPassword, setUsername } = useSignupData();
-
     const { formType, setFormType } = useJoinFormType();
     const { showSignupAlert, setShowSignupAlert } = useErrorAlert();
+    const { setIsLoggedIn } = useUserInfo();
 
-    // Handlers
     const login = () => {
         setFormType("login");
         setShowSignupAlert(false);
@@ -23,9 +19,7 @@ export default function Auth() {
 
     const signup = () => {
         setFormType("signup");
-        if (showSignupAlert || !showSignupAlert) {
-            setShowSignupAlert(false);
-        }
+        setShowSignupAlert(false);
         setEmail("");
         setPassword("");
         setUsername("");
@@ -33,17 +27,12 @@ export default function Auth() {
 
     return (
         <div className="flex flex-col w-full">
-            {/* Title */}
             <header className="mx-auto max-w-md space-y-3 border-b pb-2">
-                <div className="space-y-2 text-center">
-                    <h1 className="text-lg font-bold mb-3">Welcome to Nirlipta Yoga</h1>
-                </div>
+                <h1 className="text-lg font-bold mb-3 text-center">Welcome to Nirlipta Yoga</h1>
             </header>
 
-            {/* Form */}
-            {formType === "signup" ? <Signup /> : <Login />}
+            {formType === "signup" ? <Signup /> : <Login onLoginSuccess={() => setIsLoggedIn(true)} />}
 
-            {/* Switch between Login and Signup */}
             <div className="text-center space-y-2 mt-4">
                 {formType === "signup" ? (
                     <p className="text-sm">

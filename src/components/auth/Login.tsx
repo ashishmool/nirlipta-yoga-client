@@ -1,6 +1,5 @@
-import { useState } from "react";
-import axios from "axios";
-import { AxiosError } from 'axios';
+import { useContext, useState } from "react";
+import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -16,10 +15,12 @@ import {
 } from "@/components/ui/dialog";
 import Signup from "@/components/auth/Signup";
 import ResetRequest from "@/components/auth/ResetRequest";
+import { UserInfoContext } from "@/context/UserInfoContext.tsx";
+import {AuthContext} from "@/context/AuthContext.tsx";
 
 type LoginRegisterModalProps = {
     onClose: () => void;
-    onLoginSuccess?: () => void; // Added callback for login success
+    onLoginSuccess?: () => void;
 };
 
 export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalProps) {
@@ -28,6 +29,10 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
+
+    const { setIsLoggedIn } = useContext(UserInfoContext);
+    const { setInfo } = useContext(AuthContext);
+    console.log(setInfo)
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -43,7 +48,9 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
             });
 
             const { token, user_id, email: userEmail, role } = response.data;
+
             if (token) {
+                // Save credentials to localStorage
                 localStorage.setItem("token", token);
                 localStorage.setItem("user_id", user_id);
                 localStorage.setItem("email", userEmail);
@@ -51,22 +58,21 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
 
                 toast.success("Login successful!");
 
-                // Invoke callback for additional success handling
-                if (onLoginSuccess) onLoginSuccess();
+                // Update login state
+                setIsLoggedIn(true);
+                setInfo({email,role})
 
-                // Role-based redirection
-                switch (role) {
-                    case "admin":
-                        window.location.href = "/admin"; // Redirect to admin page
-                        break;
-                    case "instructor":
-                        window.location.href = "/instructor"; // Redirect to instructor page
-                        break;
-                    case "student":
-                    default:
-                        // No redirect for students, let them remain on the current page
-                        break;
-                }
+                // // Optional success callback
+                // if (onLoginSuccess) onLoginSuccess();
+                //
+                // // Redirect based on role
+                // const roleRedirects: Record<string, string> = {
+                //     admin: "/admin",
+                //     instructor: "/instructor",
+                //     student: "/dashboard",
+                // };
+                //
+                // window.location.href = roleRedirects[role] || "/";
 
                 onClose();
             } else {
@@ -85,13 +91,14 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
     };
 
     const handleKeyDown = (event: React.KeyboardEvent) => {
+
         if (event.key === "Enter") {
-            handleLogin(); // Trigger login on Enter key press
+            handleLogin();
         }
     };
 
     return (
-        <Dialog open={true} onOpenChange={onClose}>
+        <Dialog open onOpenChange={onClose}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
@@ -109,10 +116,7 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
                 ) : isLogin ? (
                     <div className="mt-4">
                         <div className="space-y-2">
-                            <Label
-                                htmlFor="email"
-                                className="font-bold text-black text-[15px]"
-                            >
+                            <Label htmlFor="email" className="font-bold text-black text-[15px]">
                                 Email Address
                             </Label>
                             <Input
@@ -127,10 +131,7 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
                         </div>
 
                         <div className="mt-4 space-y-2">
-                            <Label
-                                htmlFor="password"
-                                className="font-bold text-black text-[15px]"
-                            >
+                            <Label htmlFor="password" className="font-bold text-black text-[15px]">
                                 Password
                             </Label>
                             <Input
@@ -173,10 +174,7 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
                         </p>
                     </div>
                 ) : (
-                    <Signup
-                        onClose={onClose}
-                        onSwitchToLogin={() => setIsLogin(true)}
-                    />
+                    <Signup onClose={onClose} onSwitchToLogin={() => setIsLogin(true)} />
                 )}
 
                 <DialogClose className="absolute right-4 top-4">

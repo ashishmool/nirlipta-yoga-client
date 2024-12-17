@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useEffect, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 
@@ -7,8 +8,8 @@ import BackgroundSvg from "@/assets/bg.svg";
 // SERVICES
 import { checkSession } from "@/backend/services/auth/checkSession";
 
-// STATES
-import useUserState from "@/lib/states/userStates";
+// CONTEXT
+import { UserInfoProvider } from "@/context/UserInfoContext";
 
 // UI
 import { Footer } from "@/components";
@@ -16,59 +17,59 @@ import { LoadingScreen } from "@/components/ui/loading";
 import { Toaster } from "sonner";
 
 // Components
-import MainNav from "@/components/common/MainNav.tsx";
-
-// Routing
+import MainNav from "@/components/common/MainNav";
 import Routing from "./Routing";
+import {AuthProvider} from "@/context/AuthContext.tsx";
 
 export default function App() {
     const [activeLoadingScreen, setActiveLoadingScreen] = useState<boolean>(true);
-    const {setIsLoggedIn} = useUserState();
 
     useEffect(() => {
         const validateSession = async () => {
             try {
-                const isValidSession = await checkSession();
-                setIsLoggedIn(isValidSession);
+                await checkSession();
             } catch (error) {
                 console.error("Error validating session:", error);
-                setIsLoggedIn(false);
             } finally {
                 setActiveLoadingScreen(false);
             }
         };
 
         validateSession();
-    }, [setIsLoggedIn]);
+    }, []);
 
     const isAdminRoute = () => window.location.pathname.startsWith("/admin");
 
     return (
-        <div
-            style={{
-                backgroundImage: `url(${BackgroundSvg})`,
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "cover",
-                backgroundAttachment: "fixed",
-                backgroundPosition: "center",
-                minHeight: "100vh",
-                display: "flex",
-                flexDirection: "column",
-            }}
-        >
-            {activeLoadingScreen ? (
-                <LoadingScreen />
-            ) : (
-                <BrowserRouter>
-                    <Toaster richColors />
+        <AuthProvider>
+        <UserInfoProvider>
+            <div
+                style={{
+                    backgroundImage: `url(${BackgroundSvg})`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: "cover",
+                    backgroundAttachment: "fixed",
+                    backgroundPosition: "center",
+                    minHeight: "100vh",
+                    display: "flex",
+                    flexDirection: "column",
+                }}
+            >
+                {activeLoadingScreen ? (
+                    <LoadingScreen />
+                ) : (
+                    <BrowserRouter>
+                        <Toaster richColors />
 
-                    {!isAdminRoute() && <MainNav />}
+                        {!isAdminRoute() && <MainNav />}
 
-                    <Routing />
+                        <Routing />
 
-                    {!isAdminRoute() && <Footer />}
-                </BrowserRouter>
-            )}
-        </div>
+                        {!isAdminRoute() && <Footer />}
+                    </BrowserRouter>
+                )}
+            </div>
+        </UserInfoProvider>
+        </AuthProvider>
     );
 }

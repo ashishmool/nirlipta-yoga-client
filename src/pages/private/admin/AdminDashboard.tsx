@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Outlet } from "react-router-dom";
+import {Link, Outlet, useNavigate} from "react-router-dom";
 import { FaChalkboardTeacher, FaHammer, FaHome, FaSuitcase, FaHandshake, FaUsers, FaSignOutAlt } from "react-icons/fa";
 
 const sidelinks = [
@@ -72,6 +72,8 @@ function Sidebar({ isCollapsed, setIsCollapsed, onLogout }: { isCollapsed: boole
 export default function AdminDashboard() {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
+    const navigate = useNavigate();
+
     const handleLogout = () => {
         // Clear localStorage and redirect
         localStorage.removeItem("token");
@@ -95,6 +97,11 @@ export default function AdminDashboard() {
                     <header style={{ marginBottom: "20px", borderBottom: "1px solid #ddd", paddingBottom: "10px", cursor: "pointer" }}>
                         <h1>Admin Dashboard</h1>
                         {userEmail && <p>Welcome, {userEmail}</p>}
+                    </header>
+                </Link>
+                <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
+                    <header style={{ marginBottom: "20px", borderBottom: "1px solid #ddd", paddingBottom: "10px", cursor: "pointer" }}>
+                        <h1>Home</h1>
                     </header>
                 </Link>
                 <div>
