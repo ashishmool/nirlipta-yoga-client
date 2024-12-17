@@ -1,66 +1,116 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from "../../../components/ui/button.tsx";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area.tsx";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
-import { dummyWorkshops } from "../../../backend/data/dummyWorkshops.ts";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import { Button } from "../../../components/ui/button";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
-interface Course {
+interface Workshop {
     photos: string[];
-    code: string;
-    name: string;
-    categories: string[];
+    _id: string;
+    title: string;
+    categoryId: string;
     price: number;
     discountPrice?: number;
-    categoryId: number;
     duration: string;
 }
 
 interface Category {
-    id: number;
+    _id: string;
     name: string;
     label: string;
 }
 
-const categories: Category[] = [
-    { id: 1, name: "Yoga Basics", label: "Yoga Basics" },
-    { id: 2, name: "Advanced Yoga", label: "Advanced Asanas" },
-    { id: 3, name: "Meditation", label: "Mindfulness Meditation" },
-];
+interface Workshop {
+    photos: string[];
+    _id: string;
+    title: string;
+    categoryId: string;
+    price: number;
+    discountPrice?: number;
+    duration: string;
+}
+
+interface Category {
+    _id: string;
+    name: string;
+    label: string;
+}
 
 const Workshops: React.FC = () => {
+    const [workshops, setWorkshops] = useState<Workshop[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const coursesPerPage = 3;
 
-    // Filtered courses based on the selected category
-    const filteredCourses = selectedCategoryId
-        ? dummyWorkshops.filter(course => course.categoryId === selectedCategoryId)
-        : dummyWorkshops;
+    // Fetch workshops and categories from the backend
+    useEffect(() => {
+        const fetchWorkshops = async () => {
+            try {
+                const response = await axios.get("http://localhost:5000/api/workshops");
+                setWorkshops(response.data);
+            } catch (error) {
+                console.error("Error fetching workshops:", error);
+                toast.error("Failed to fetch workshops.");
+            }
+        };
 
-    // Total number of pages based on the filtered courses
-    const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
+        const fetchCategories = async () => {
+            try {
+                const response = await axios.get("http://localhost:5000/api/workshop-categories");
+                setCategories(response.data);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                toast.error("Failed to fetch categories.");
+            }
+        };
 
-    // Get the current set of courses to display
-    const currentCourses = filteredCourses.slice(
+        fetchWorkshops();
+        fetchCategories();
+    }, []);
+
+    console.log("Fetched Workshops::::", workshops);
+    console.log("Fetched Categories::::", categories);
+
+    // Filter workshops based on selected category
+    const filteredWorkshops = selectedCategoryId
+        ? workshops.filter((workshop) => {
+            // Log workshop categoryId and selectedCategoryId to debug
+            console.log("Filtering workshops for categoryId:", selectedCategoryId, "Workshop's categoryId:", workshop._id);
+            return workshop._id === selectedCategoryId;
+        })
+        : workshops;  // If no category is selected, show all workshops
+
+    // Total number of pages based on filtered workshops
+    const totalPages = Math.ceil(filteredWorkshops.length / coursesPerPage);
+
+    // Get the current set of workshops to display
+    const currentWorkshops = filteredWorkshops.slice(
         (currentPage - 1) * coursesPerPage,
         currentPage * coursesPerPage
     );
 
-    // Update the page number
+    const handleCategorySelection = (categoryId: string | null) => {
+        setSelectedCategoryId(categoryId);  // This sets the selected category
+        setCurrentPage(1);  // Reset to first page
+    };
+
+
+
+
+    // Pagination handlers
     const goToPage = (page: number) => setCurrentPage(page);
     const goToNextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
     const goToPreviousPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
 
-    // Handle category selection and reset page to 1
-    const handleCategorySelection = (categoryId: number | null) => {
-        setSelectedCategoryId(categoryId);
-        setCurrentPage(1); // Reset to page 1 whenever the category changes
-    };
+
+
+
 
     return (
-
         <div className="online-courses-page flex flex-col sm:flex-row gap-8 mb-8 mt-10">
             {/* Sidebar */}
             <div className="sidebar p-6 rounded-lg w-full sm:w-1/4 relative mt-4">
@@ -69,18 +119,20 @@ const Workshops: React.FC = () => {
                 <ScrollArea className="w-full h-120">
                     <ul className="space-y-6">
                         {categories.map((category) => (
-                            <li key={category.id} className="category">
+                            <li key={category._id} className="category">
                                 <Link
                                     to="#"
                                     className={`flex items-center space-x-2 text-gray-700 hover:text-[#9B6763] transition-all ${
-                                        selectedCategoryId === category.id ? "text-[#9B6763]" : ""
+                                        selectedCategoryId === category._id ? "text-[#9B6763]" : ""
                                     }`}
-                                    onClick={() => handleCategorySelection(category.id)}
+                                    onClick={() => handleCategorySelection(category._id)}
                                 >
-                                    <span className="font-semibold">{category.label}</span>
+                                    <span className="font-semibold">{category.name}</span>
                                 </Link>
                             </li>
                         ))}
+
+
                         {/* Reset Filters */}
                         <li className="category">
                             <Link
@@ -96,39 +148,47 @@ const Workshops: React.FC = () => {
                 </ScrollArea>
             </div>
 
-
-
-            {/* Course List */}
+            {/* Workshop List */}
             <div className="course-list w-full sm:w-3/4">
-                {filteredCourses.length === 0 ? (
-                    <p className="text-center text-lg text-gray-500">No courses found</p>
+                {filteredWorkshops.length === 0 ? (
+                    <p className="text-center text-lg text-gray-500">No workshops found</p>
                 ) : (
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {currentCourses.map((course, index) => (
-                                <div key={index} className="course-card bg-white p-6 rounded-lg shadow-lg relative">
+                            {currentWorkshops.map((workshop) => (
+                                <div key={workshop._id} className="course-card bg-white p-6 rounded-lg shadow-lg relative">
                                     <Badge className="absolute z-10 text-white rounded-none mt-8" style={{ backgroundColor: "#A38F85" }}>
-                                        {categories.find(cat => cat.id === course.categoryId)?.label || "Unknown"}
+                                        {(() => {
+                                            const category = categories.find((cat) => cat._id);
+                                            return category ? category.name : "Unknown";
+                                        })()}
                                     </Badge>
+
+
+
                                     <Carousel>
                                         <CarouselContent>
-                                            {course.photos.slice(0, 3).map((photo, index) => (
+                                            {(workshop.photos && workshop.photos.length > 0
+                                                    ? workshop.photos.slice(0, 3)
+                                                    : ["/path/to/default-image.jpg"] // Provide a default image path
+                                            ).map((photo, index) => (
                                                 <CarouselItem key={index}>
-                                                    <img src={photo} alt={course.name} className="object-cover h-full w-full rounded-lg" />
+                                                    <img src={photo} alt={workshop.title} className="object-cover h-full w-full rounded-lg" />
                                                 </CarouselItem>
                                             ))}
                                         </CarouselContent>
                                     </Carousel>
-                                    <h3 className="course-name font-semibold text-lg text-gray-800 mt-4">{course.name}</h3>
-                                    <p className="course-duration text-gray-500 text-sm mt-2">Duration: {course.duration}</p>
+
+                                    <h3 className="course-name font-semibold text-lg text-gray-800 mt-4">{workshop.title}</h3>
+                                    <p className="course-duration text-gray-500 text-sm mt-2">Duration: {workshop.duration}</p>
                                     <p className="price mt-4 flex items-center">
-                                        {course.discountPrice ? (
+                                        {workshop.discountPrice ? (
                                             <>
-                                                <span className="original-price line-through text-gray-500 mr-2">Rs {course.price}</span>
-                                                <span className="discount-price font-bold" style={{ color: "#9B6763" }}>Rs {course.discountPrice}</span>
+                                                <span className="original-price line-through text-gray-500 mr-2">Rs {workshop.price}</span>
+                                                <span className="discount-price font-bold" style={{ color: "#9B6763" }}>Rs {workshop.discountPrice}</span>
                                             </>
                                         ) : (
-                                            <span className="text-gray-800 font-bold">Rs {course.price}</span>
+                                            <span className="text-gray-800 font-bold">Rs {workshop.price}</span>
                                         )}
                                     </p>
                                     <Button className="enroll-btn mt-4 bg-black text-white px-4 py-2">Enroll Now</Button>
@@ -153,9 +213,7 @@ const Workshops: React.FC = () => {
                                         key={index}
                                         onClick={() => goToPage(index + 1)}
                                         className={`px-3 py-1 rounded-2xl text-sm ${
-                                            currentPage === index + 1
-                                                ? "bg-black text-white font-bold"
-                                                : "text-gray-500 hover:text-black"
+                                            currentPage === index + 1 ? "bg-black text-white font-bold" : "text-gray-500 hover:text-black"
                                         }`}
                                     >
                                         {index + 1}

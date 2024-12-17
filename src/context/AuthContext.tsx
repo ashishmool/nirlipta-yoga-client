@@ -1,20 +1,23 @@
-import { createContext, useState, ReactNode } from "react";
+// AuthContext.tsx
+import React, { createContext, useState, useEffect } from "react";
 
-// Define the type of context value
-type AuthContextType = {
-    info: { email: string; role: string };
-    setInfo: React.Dispatch<React.SetStateAction<{ email: string; role: string }>>;
-};
+interface AuthInfo {
+    email: string;
+    role: string;
+}
 
-// Create context with a default value matching the expected shape
-export const AuthContext = createContext<AuthContextType>({info:{email: "", role: ""},setInfo:()=>{}});
+export const AuthContext = createContext({
+    info: { email: "", role: "" },
+    setInfo: (_info: AuthInfo) => {},
+});
 
-type AuthProviderProps = {
-    children: ReactNode;
-};
-
-export const AuthProvider = ({ children }: AuthProviderProps) => {
-    const [info, setInfo] = useState<{ email: string; role: string }>({ email: "", role: "" });
+export const AuthProvider = ({ children }) => {
+    const [info, setInfo] = useState<AuthInfo>(() => {
+        // Initialize with values from localStorage if they exist
+        const email = localStorage.getItem("email") || "";
+        const role = localStorage.getItem("role") || "";
+        return { email, role };
+    });
 
     return (
         <AuthContext.Provider value={{ info, setInfo }}>

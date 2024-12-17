@@ -32,7 +32,6 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
 
     const { setIsLoggedIn } = useContext(UserInfoContext);
     const { setInfo } = useContext(AuthContext);
-    console.log(setInfo)
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -48,7 +47,7 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
             });
 
             const { token, user_id, email: userEmail, role } = response.data;
-
+            console.log("Logged In Response Data:::", response.data);
             if (token) {
                 // Save credentials to localStorage
                 localStorage.setItem("token", token);
@@ -65,14 +64,14 @@ export default function Login({ onClose, onLoginSuccess }: LoginRegisterModalPro
                 // // Optional success callback
                 // if (onLoginSuccess) onLoginSuccess();
                 //
-                // // Redirect based on role
-                // const roleRedirects: Record<string, string> = {
-                //     admin: "/admin",
-                //     instructor: "/instructor",
-                //     student: "/dashboard",
-                // };
-                //
-                // window.location.href = roleRedirects[role] || "/";
+                // Redirect based on role
+                const roleRedirects: Record<string, string> = {
+                    admin: "/admin",
+                    instructor: "/instructor",
+                    student: "/student",
+                };
+
+                window.location.href = roleRedirects[role] || "/";
 
                 onClose();
             } else {

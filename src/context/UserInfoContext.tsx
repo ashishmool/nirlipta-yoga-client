@@ -15,9 +15,6 @@ export const UserInfoProvider = ({ children }: { children: ReactNode }) => {
         return !!localStorage.getItem("token"); // Initialize from localStorage
     });
 
-    useEffect(() => {
-        console.log("Initial isLoggedIn:", isLoggedIn);
-    }, [isLoggedIn]);
 
     return (
         <UserInfoContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>

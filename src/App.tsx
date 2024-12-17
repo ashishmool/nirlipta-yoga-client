@@ -42,7 +42,6 @@ export default function App() {
 
     return (
         <AuthProvider>
-        <UserInfoProvider>
             <div
                 style={{
                     backgroundImage: `url(${BackgroundSvg})`,
@@ -61,15 +60,11 @@ export default function App() {
                     <BrowserRouter>
                         <Toaster richColors />
 
-                        {!isAdminRoute() && <MainNav />}
-
                         <Routing />
-
                         {!isAdminRoute() && <Footer />}
                     </BrowserRouter>
                 )}
             </div>
-        </UserInfoProvider>
         </AuthProvider>
     );
 }

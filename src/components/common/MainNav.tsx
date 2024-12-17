@@ -15,6 +15,17 @@ export default function MainNav() {
 
     const { info, setInfo } = useContext(AuthContext);
 
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        const email = localStorage.getItem("email");
+        const role = localStorage.getItem("role");
+
+        if (token && email && role) {
+            setInfo({ email, role });
+        }
+    }, []);
+
+
     // Handle scroll
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -24,10 +35,13 @@ export default function MainNav() {
 
     // Handle logout
     const handleLogout = () => {
-        localStorage.clear();
-        setInfo({ email: "", role: "" }); // Clear user info from context
-        toast.success("Logged Out Successfully!")
+        localStorage.removeItem("token");
+        localStorage.removeItem("email");
+        localStorage.removeItem("role");
+        setInfo({ email: "", role: "" });
+        toast.success("Logged Out Successfully!");
     };
+
 
     // Toggle mobile menu
     const toggleMobileMenu = () => {
@@ -45,10 +59,6 @@ export default function MainNav() {
                     <Link to="/" className="mr-3 w-1/8">
                         <img src={Logo} className="w-24 h-auto" alt="Nirlipta Yoga" />
                     </Link>
-
-                    {info?.email && info?.role && (
-                        <div className="text-gray-800 font-medium">{`${info?.email} (${info?.role})`}</div>
-                    )}
 
                     {/* Hamburger Icon */}
                     <button
@@ -112,7 +122,11 @@ export default function MainNav() {
                         </a>
                     </div>
 
+
                     {/* Login/Logout Button */}
+                    {info?.email && info?.role && (
+                        <div className="text-gray-800 text-sm">{`${info?.email} (${info?.role})`}</div>
+                    )}
                     <div className="mt-4 lg:mt-0 w-2/8">
                         {info?.email && info?.role ? (
                             <Button
