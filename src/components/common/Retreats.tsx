@@ -57,7 +57,7 @@ const Retreats: React.FC = () => {
                 {/* Header */}
                 <div className="relative sm:mx-auto mx-3 pt-[10px] pb-[20px] text-center">
                     <div className="container">
-                        <h1 className="sm:text-5xl text-4xl font-bold capitalize mb-6">Retreats</h1>
+                        <h1 className="sm:text-5xl text-4xl font-bold capitalize mb-6">Upcoming Retreats</h1>
                         <p className="text-gray-700 text-lg sm:w-[100%] mx-auto">
                             Dive into the transformative world of yoga with our retreats.
                         </p>

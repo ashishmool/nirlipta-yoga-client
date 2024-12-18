@@ -1,77 +1,90 @@
 import { useState } from "react";
-import {Link, Outlet, useNavigate} from "react-router-dom";
-import { FaChalkboardTeacher, FaHammer, FaHome, FaSuitcase, FaHandshake, FaUsers, FaSignOutAlt } from "react-icons/fa";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import {
+    FaChalkboardTeacher,
+    FaHammer,
+    FaHome,
+    FaSuitcase,
+    FaUsers,
+    FaSignOutAlt,
+} from "react-icons/fa";
+import { FaPeopleGroup, FaPersonPraying } from "react-icons/fa6";
 
 const sidelinks = [
+    { title: "Dashboard", href: "/admin", icon: <FaHome /> },
     { title: "Instructors", href: "/admin/instructors", icon: <FaChalkboardTeacher /> },
     { title: "Workshops", href: "/admin/workshops", icon: <FaHammer /> },
     { title: "Accommodations", href: "/admin/accommodations", icon: <FaHome /> },
     { title: "Retreats", href: "/admin/retreats", icon: <FaSuitcase /> },
+    { title: "Yoga Poses", href: "/admin", icon: <FaPersonPraying /> },
+    { title: "Partners", href: "/admin", icon: <FaPeopleGroup /> },
     { title: "Users", href: "/admin/users", icon: <FaUsers /> },
 ];
 
-function Sidebar({ isCollapsed, setIsCollapsed, onLogout }: { isCollapsed: boolean; setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>; onLogout: () => void }) {
+function Sidebar({
+                     isCollapsed,
+                     setIsCollapsed,
+                     onLogout,
+                 }: {
+    isCollapsed: boolean;
+    setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+    onLogout: () => void;
+}) {
     return (
         <aside
-            style={{
-                width: isCollapsed ? "60px" : "200px",
-                backgroundColor: "#f8f9fa",
-                height: "100vh",
-                transition: "width 0.3s",
-                padding: "10px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-            }}
+            className={`${
+                isCollapsed ? "w-16" : "w-64"
+            } bg-gray-800 text-white h-screen transition-all duration-300 flex flex-col justify-between`}
         >
-            <div>
-                <button onClick={() => setIsCollapsed(!isCollapsed)} style={{ marginBottom: "20px", width: "100%" }}>
-                    {isCollapsed ? "▶" : "◀"}
+            {/* Collapse/Expand Button */}
+            <div className="p-4">
+                <button
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className="text-gray-300 mb-4 w-full flex justify-center items-center hover:bg-gray-700 p-2 rounded"
+                >
+                    {isCollapsed ? (
+                        <span className="text-lg">▶</span>
+                    ) : (
+                        <span className="text-lg">◀</span>
+                    )}
                 </button>
+
+                {/* Navigation Links */}
                 <nav>
                     {sidelinks.map((link) => (
                         <Link
                             key={link.title}
                             to={link.href}
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                padding: "10px",
-                                textDecoration: "none",
-                                color: "#333",
-                                marginBottom: "5px",
-                                justifyContent: isCollapsed ? "center" : "flex-start",
-                            }}
+                            className={`flex items-center space-x-3 p-3 rounded hover:bg-gray-700 transition-all duration-200 ${
+                                isCollapsed ? "justify-center" : "justify-start"
+                            }`}
                         >
-                            <span style={{ marginRight: isCollapsed ? 0 : "10px" }}>{link.icon}</span>
-                            {!isCollapsed && <span>{link.title}</span>}
+                            <span className="text-xl">{link.icon}</span>
+                            {!isCollapsed && (
+                                <span className="whitespace-nowrap">{link.title}</span>
+                            )}
                         </Link>
                     ))}
                 </nav>
             </div>
+
+            {/* Logout Button */}
             <button
                 onClick={onLogout}
-                style={{
-                    backgroundColor: "#e63946",
-                    color: "#fff",
-                    padding: "10px",
-                    border: "none",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: isCollapsed ? "center" : "flex-start",
-                }}
+                className={`bg-red-600 hover:bg-red-700 p-3 text-white flex items-center justify-center rounded m-4 ${
+                    isCollapsed ? "justify-center" : "justify-start"
+                }`}
             >
-                <FaSignOutAlt style={{ marginRight: isCollapsed ? 0 : "10px" }} />
-                {!isCollapsed && <span>Logout</span>}
+                <FaSignOutAlt className="text-xl" />
+                {!isCollapsed && <span className="ml-3">Logout</span>}
             </button>
         </aside>
     );
 }
 
+
 export default function AdminDashboard() {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -80,35 +93,35 @@ export default function AdminDashboard() {
         localStorage.removeItem("user_id");
         localStorage.removeItem("email");
         localStorage.removeItem("role");
-        // Redirect with a full page reload
-        window.location.href = "/";
+        navigate("/");
     };
 
     const userEmail = localStorage.getItem("email");
 
     return (
-        <div style={{ display: "flex", height: "100vh", fontFamily: "Arial, sans-serif" }}>
+        <div className="flex h-screen">
             {/* Sidebar */}
-            <Sidebar isCollapsed={isSidebarCollapsed} setIsCollapsed={setIsSidebarCollapsed} onLogout={handleLogout} />
+            <Sidebar
+                isCollapsed={isSidebarCollapsed}
+                setIsCollapsed={setIsSidebarCollapsed}
+                onLogout={handleLogout}
+            />
 
             {/* Main Content */}
-            <div style={{ flex: 1, padding: "20px" }}>
-                <Link to="/admin" style={{ textDecoration: "none", color: "inherit" }}>
-                    <header style={{ marginBottom: "20px", borderBottom: "1px solid #ddd", paddingBottom: "10px", cursor: "pointer" }}>
-                        <h1>Admin Dashboard</h1>
-                        {userEmail && <p>Welcome, {userEmail}</p>}
-                    </header>
-                </Link>
-                <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
-                    <header style={{ marginBottom: "20px", borderBottom: "1px solid #ddd", paddingBottom: "10px", cursor: "pointer" }}>
-                        <h1>Home</h1>
-                    </header>
-                </Link>
-                <div>
-                    {/* Render nested routes */}
+            <div className="flex-1 p-6 bg-gray-100">
+                <header className="flex flex-col border-b border-gray-300 pb-4 mb-6">
+                    <h1 className="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+                    {userEmail && (
+                        <p className="text-sm text-gray-600 mt-2">Welcome, {userEmail}</p>
+                    )}
+                </header>
+
+                {/* Nested Routes */}
+                <div className="bg-white shadow rounded-lg p-6">
                     <Outlet />
                 </div>
             </div>
         </div>
     );
 }
+

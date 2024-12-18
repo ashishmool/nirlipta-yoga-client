@@ -1,8 +1,10 @@
 import aboutPhoto from "@/assets/about-us.jpg";
 import aboutVideo from "@/assets/videos/about-nirlipta.mp4";
+import MainNav from "@/components/common/MainNav.tsx";
 
 export default function AboutDetails() {
     return (
+
         <div className="md:container container-fluid">
             <div className="flex flex-col min-h-[100dvh]">
 

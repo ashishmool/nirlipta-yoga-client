@@ -1,6 +1,5 @@
-// src/App.tsx
 import { useEffect, useState } from "react";
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useLocation } from "react-router-dom";
 
 // SVG Background
 import BackgroundSvg from "@/assets/bg.svg";
@@ -12,14 +11,14 @@ import { checkSession } from "@/backend/services/auth/checkSession";
 import { UserInfoProvider } from "@/context/UserInfoContext";
 
 // UI
-import { Footer } from "@/components";
+import { Footer, Navbar } from "@/components";
 import { LoadingScreen } from "@/components/ui/loading";
 import { Toaster } from "sonner";
 
 // Components
 import MainNav from "@/components/common/MainNav";
 import Routing from "./Routing";
-import {AuthProvider} from "@/context/AuthContext.tsx";
+import { AuthProvider } from "@/context/AuthContext.tsx";
 
 export default function App() {
     const [activeLoadingScreen, setActiveLoadingScreen] = useState<boolean>(true);
@@ -38,7 +37,21 @@ export default function App() {
         validateSession();
     }, []);
 
-    const isAdminRoute = () => window.location.pathname.startsWith("/admin");
+    const Layout = () => {
+        const location = useLocation();
+
+        // Check if the current route starts with "/admin"
+        const isAdminRoute = location.pathname.startsWith("/admin");
+
+        return (
+            <>
+                <Routing />
+                {/* Conditionally render Navbar or MainNav */}
+                {isAdminRoute ? <Navbar /> : <MainNav />}
+                {!isAdminRoute && <Footer />}
+            </>
+        );
+    };
 
     return (
         <AuthProvider>
@@ -59,10 +72,7 @@ export default function App() {
                 ) : (
                     <BrowserRouter>
                         <Toaster richColors />
-
-                        <Routing />
-                        {!isAdminRoute() && <MainNav />}
-                        {!isAdminRoute() && <Footer />}
+                        <Layout />
                     </BrowserRouter>
                 )}
             </div>
