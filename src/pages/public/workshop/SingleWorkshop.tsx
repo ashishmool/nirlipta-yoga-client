@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "../../../components/ui/button.tsx";
 import axios from "axios";
+import { useParams } from "react-router-dom";
+import { Button } from "../../../components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { FaMapMarkerAlt, FaUserTie, FaRegClock } from "react-icons/fa"; // React Icons
+
+interface Module {
+    name: string;
+    duration: number; // Duration in minutes
+    _id: string;
+}
 
 interface Workshop {
     _id: string;
@@ -9,109 +18,124 @@ interface Workshop {
     description: string;
     difficulty_level: string;
     price: number;
+    discountPrice?: number;
     classroom_info: string;
     address: string;
     map_location: string;
     photo: string;
+    modules: Module[];
     instructor_id: string;
+    category: string;
+}
+
+interface Category {
+    _id: string;
+    name: string;
+    label: string;
 }
 
 const SingleWorkshop: React.FC = () => {
-    const { id } = useParams<{ id: string }>(); // Get the workshop ID from the URL
-    const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
     const [workshop, setWorkshop] = useState<Workshop | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [category, setCategory] = useState<Category | null>(null);
 
-    // Fetch workshop details
     useEffect(() => {
         const fetchWorkshop = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/api/workshops/${id}`);
                 setWorkshop(response.data);
-                setLoading(false);
-            } catch (err) {
-                setError("Failed to load workshop details.");
-                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching workshop:", error);
+                toast.error("Failed to fetch workshop details.");
             }
         };
 
-        fetchWorkshop();
+        const fetchCategory = async (categoryId: string) => {
+            try {
+                const response = await axios.get(`http://localhost:5000/api/workshop-categories/${categoryId}`);
+                setCategory(response.data);
+            } catch (error) {
+                console.error("Error fetching category:", error);
+                toast.error("Failed to fetch category details.");
+            }
+        };
+
+        if (id) {
+            fetchWorkshop();
+        }
     }, [id]);
 
-    if (loading) return <div className="text-center">Loading...</div>;
-    if (error) return <div className="text-center text-red-500">{error}</div>;
+    if (!workshop) {
+        return <div>Loading...</div>;
+    }
+
+    const firstPhoto = workshop.photo ? `http://localhost:5000${workshop.photo}` : "/path/to/fallback-image.jpg";
 
     return (
-        <div className="max-w-4xl mx-auto mt-8 p-6 bg-white shadow-md rounded-lg">
-            {/* Back Button */}
-            <button
-                onClick={() => navigate(-1)}
-                className="mb-4 text-[#9B6763] hover:underline text-sm"
-            >
-                &larr; Back to Workshops
-            </button>
+        <div className="single-workshop-page flex flex-col sm:flex-row gap-8 mb-8 mt-24">
+            {/* Left Image Section */}
+            <div className="workshop-image w-full sm:w-2/5">
+                <div className="relative w-full h-96 overflow-hidden">
+                    <img
+                        src={firstPhoto}
+                        alt={workshop.title}
+                        className="object-cover w-full h-full"
+                    />
+                </div>
+            </div>
 
-            {/* Workshop Details */}
-            {workshop && (
-                <>
-                    <div className="flex flex-col md:flex-row gap-6">
-                        {/* Workshop Image */}
-                        <div className="w-full md:w-1/2">
-                            <img
-                                src={workshop.photo}
-                                alt={workshop.title}
-                                className="object-cover rounded-lg shadow-lg"
-                            />
-                        </div>
+            {/* Right Details Section */}
+            <div className="workshop-details w-full sm:w-3/5">
+                <h2 className="text-3xl font-bold text-gray-800">{workshop.title}</h2>
+                {category && (
+                    <Badge className="mt-4 text-white rounded-none" style={{ backgroundColor: "#A38F85" }}>
+                        {category.name}
+                    </Badge>
+                )}
+                <p className="mt-4 text-gray-600 text-lg">{workshop.description}</p>
+                <p className="mt-4 text-gray-500 text-sm">Difficulty Level: {workshop.difficulty_level}</p>
 
-                        {/* Workshop Information */}
-                        <div className="w-full md:w-1/2">
-                            <h1 className="text-2xl font-bold text-gray-800">{workshop.title}</h1>
-                            <p className="text-gray-600 mt-2">{workshop.description}</p>
+                {/* Classroom Info */}
+                <p className="mt-4 text-gray-500 text-sm flex items-center">
+                    <FaRegClock className="mr-2" />
+                    Classroom Info: {workshop.classroom_info}
+                </p>
 
-                            <div className="mt-4">
-                                <p className="text-sm text-gray-500">
-                                    <span className="font-bold">Difficulty Level: </span>
-                                    {workshop.difficulty_level}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                    <span className="font-bold">Classroom Info: </span>
-                                    {workshop.classroom_info || "N/A"}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                    <span className="font-bold">Address: </span>
-                                    {workshop.address || "N/A"}
-                                </p>
-                            </div>
+                {/* Address */}
+                <p className="mt-4 text-gray-500 text-sm flex items-center">
+                    <FaMapMarkerAlt className="mr-2" />
+                    Address: {workshop.address}
+                </p>
 
-                            <div className="mt-4">
-                                <p className="text-lg font-bold text-gray-800">
-                                    Price: <span className="text-[#9B6763]">Rs {workshop.price}</span>
-                                </p>
-                            </div>
+                {/* Modules List */}
+                <div className="mt-6">
+                    <h3 className="font-semibold text-lg text-gray-800">Modules:</h3>
+                    <ul className="list-disc pl-6">
+                        {workshop.modules.map((module, index) => (
+                            <li key={module._id} className="mt-2 text-gray-600">
+                                <span className="font-semibold">{module.name}</span> - {module.duration} mins
+                            </li>
+                        ))}
+                    </ul>
+                </div>
 
-                            {/* Enroll Button */}
-                            <Button className="mt-6 bg-[#9B6763] text-white w-full">
-                                Enroll Now
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Map Section */}
-                    {workshop.map_location && (
-                        <div className="mt-8">
-                            <h2 className="text-lg font-semibold text-gray-800">Location</h2>
-                            <iframe
-                                src={workshop.map_location}
-                                className="w-full h-64 rounded-lg mt-4"
-                                title="Workshop Location"
-                                allowFullScreen
-                            ></iframe>
-                        </div>
+                {/* Price Section */}
+                <div className="price mt-6 flex items-center">
+                    {workshop.discountPrice ? (
+                        <>
+                            <span className="original-price line-through text-gray-500 mr-2">Rs {workshop.price}</span>
+                            <span className="discount-price font-bold" style={{ color: "#9B6763" }}>
+                                Rs {workshop.discountPrice}
+                            </span>
+                        </>
+                    ) : (
+                        <span className="text-gray-800 font-bold text-lg"><strong>Price: </strong>AED ($) {workshop.price}</span>
                     )}
-                </>
-            )}
+                </div>
+
+                {/* Enroll Button */}
+                <Button className="enroll-btn mt-6 bg-black text-white px-6 py-3">Enroll Now</Button>
+            </div>
         </div>
     );
 };

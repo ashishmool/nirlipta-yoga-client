@@ -61,6 +61,7 @@ export default function App() {
                         <Toaster richColors />
 
                         <Routing />
+                        {!isAdminRoute() && <MainNav />}
                         {!isAdminRoute() && <Footer />}
                     </BrowserRouter>
                 )}

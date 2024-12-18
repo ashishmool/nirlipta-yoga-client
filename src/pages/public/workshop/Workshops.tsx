@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import { Button } from "../../../components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
@@ -46,6 +46,11 @@ const Workshops: React.FC = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const coursesPerPage = 3;
 
+    const navigate = useNavigate();
+    const handleEnrollClick = (workshopId: string) => {
+        navigate(`/workshops/${workshopId}`);
+    };
+
     // Fetch workshops and categories from the backend
     useEffect(() => {
         const fetchWorkshops = async () => {
@@ -62,6 +67,7 @@ const Workshops: React.FC = () => {
             try {
                 const response = await axios.get("http://localhost:5000/api/workshop-categories");
                 setCategories(response.data);
+                console.log("Categories Fectched", response.data);
             } catch (error) {
                 console.error("Error fetching categories:", error);
                 toast.error("Failed to fetch categories.");
@@ -72,15 +78,15 @@ const Workshops: React.FC = () => {
         fetchCategories();
     }, []);
 
-    console.log("Fetched Workshops::::", workshops);
-    console.log("Fetched Categories::::", categories);
+    // console.log("Fetched Workshops::::", workshops);
+    // console.log("Fetched Categories::::", categories);
 
     // Filter workshops based on selected category
     const filteredWorkshops = selectedCategoryId
         ? workshops.filter((workshop) => {
             // Log workshop categoryId and selectedCategoryId to debug
-            console.log("Filtering workshops for categoryId:", selectedCategoryId, "Workshop's categoryId:", workshop._id);
-            return workshop._id === selectedCategoryId;
+            console.log("Filtering workshops for categoryId:", selectedCategoryId, "Workshop's categoryId:", workshop.category._id);
+            return workshop.category._id === selectedCategoryId;
         })
         : workshops;  // If no category is selected, show all workshops
 
@@ -156,28 +162,39 @@ const Workshops: React.FC = () => {
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {currentWorkshops.map((workshop) => (
-                                <div key={workshop._id} className="course-card bg-white p-6 rounded-lg shadow-lg relative">
-                                    <Badge className="absolute z-10 text-white rounded-none mt-8" style={{ backgroundColor: "#A38F85" }}>
+                                <div key={workshop._id} className="course-card bg-white p-6 rounded-lg shadow-lg relative flex flex-col">
+                                    <Badge className="absolute z-10 text-white rounded-none mt-4 ml-4" style={{ backgroundColor: "#A38F85" }}>
                                         {(() => {
-                                            const category = categories.find((cat) => cat._id);
+                                            const category = categories.find((cat) => cat._id === workshop.category._id);
                                             return category ? category.name : "Unknown";
                                         })()}
                                     </Badge>
 
-
-
-                                    <Carousel>
-                                        <CarouselContent>
-                                            {(workshop.photos && workshop.photos.length > 0
-                                                    ? workshop.photos.slice(0, 3)
-                                                    : ["/path/to/default-image.jpg"] // Provide a default image path
-                                            ).map((photo, index) => (
-                                                <CarouselItem key={index}>
-                                                    <img src={photo} alt={workshop.title} className="object-cover h-full w-full rounded-lg" />
-                                                </CarouselItem>
-                                            ))}
-                                        </CarouselContent>
-                                    </Carousel>
+                                    <div className="relative w-full h-52 overflow-hidden rounded-lg"> {/* Adjusted height and ensured overflow handling */}
+                                        <Carousel className="w-full h-full">
+                                            <CarouselContent>
+                                                {workshop.photos && workshop.photos.length > 0 ? (
+                                                    workshop.photos.slice(0, 3).map((photo, index) => (
+                                                        <CarouselItem key={index} className="w-full h-full">
+                                                            <img
+                                                                src={`http://localhost:5000${photo}`}
+                                                                alt={workshop.title}
+                                                                className="object-cover w-full h-full"
+                                                            />
+                                                        </CarouselItem>
+                                                    ))
+                                                ) : (
+                                                    <CarouselItem className="w-full h-full">
+                                                        <img
+                                                            src={`http://localhost:5000${workshop.photo}`}
+                                                            alt={workshop.title}
+                                                            className="object-cover w-full h-full"
+                                                        />
+                                                    </CarouselItem>
+                                                )}
+                                            </CarouselContent>
+                                        </Carousel>
+                                    </div>
 
                                     <h3 className="course-name font-semibold text-lg text-gray-800 mt-4">{workshop.title}</h3>
                                     <p className="course-duration text-gray-500 text-sm mt-2">Duration: {workshop.duration}</p>
@@ -191,8 +208,16 @@ const Workshops: React.FC = () => {
                                             <span className="text-gray-800 font-bold">Rs {workshop.price}</span>
                                         )}
                                     </p>
-                                    <Button className="enroll-btn mt-4 bg-black text-white px-4 py-2">Enroll Now</Button>
+
+                                    <Button
+                                        className="enroll-btn mt-4 bg-black text-white px-4 py-2"
+                                        onClick={() => handleEnrollClick(workshop._id)} // Trigger navigation programmatically
+                                    >
+                                        Enroll Now
+                                    </Button>
+
                                 </div>
+
                             ))}
                         </div>
 

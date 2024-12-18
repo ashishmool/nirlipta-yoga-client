@@ -29,6 +29,7 @@ import ResetPassword from "@/components/reset/ResetPassword.tsx";
 import SingleWorkshop from "@/pages/public/workshop/SingleWorkshop.tsx";
 import InstructorDashboard from "@/pages/private/instructor/InstructorDashboard.tsx";
 import StudentDashboard from "@/pages/private/student/StudentDashboard.tsx";
+import MainNav from "@/components/common/MainNav.tsx";
 
 
 
