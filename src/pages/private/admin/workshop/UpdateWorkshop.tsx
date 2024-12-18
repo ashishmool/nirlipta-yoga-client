@@ -12,6 +12,7 @@ interface WorkshopFormData {
     title: string;
     description: string;
     difficulty_level: string;
+    discount_price: number;
     price: number;
     classroom_info: string;
     address: string;
@@ -31,6 +32,7 @@ const UpdateWorkshop: React.FC = () => {
         description: "",
         difficulty_level: "beginner",
         price: 0,
+        discount_price: 0,
         classroom_info: "",
         address: "",
         map_location: "",
@@ -93,6 +95,7 @@ const UpdateWorkshop: React.FC = () => {
                     description: workshop.description || "",
                     difficulty_level: workshop.difficulty_level || "beginner",
                     price: workshop.price || 0,
+                    discount_price: workshop.discount_price || 0,
                     classroom_info: workshop.classroom_info || "",
                     address: workshop.address || "",
                     map_location: workshop.map_location || "",
@@ -164,6 +167,7 @@ const UpdateWorkshop: React.FC = () => {
         formDataObj.append("description", formData.description);
         formDataObj.append("difficulty_level", formData.difficulty_level);
         formDataObj.append("price", formData.price.toString());
+        formDataObj.append("discount_price", formData.discount_price.toString());
         formDataObj.append("classroom_info", formData.classroom_info);
         formDataObj.append("address", formData.address);
         formDataObj.append("map_location", formData.map_location);
@@ -291,6 +295,19 @@ const UpdateWorkshop: React.FC = () => {
                         onChange={handleChange}
                         className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
                         required
+                    />
+                </div>
+
+                {/* Discounted Price */}
+                <div>
+                    <label htmlFor="discount_price" className="block text-sm font-medium text-gray-700">Discount Price</label>
+                    <input
+                        id="discount_price"
+                        name="discount_price"
+                        type="number"
+                        value={formData.discount_price}
+                        onChange={handleChange}
+                        className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
                     />
                 </div>
 

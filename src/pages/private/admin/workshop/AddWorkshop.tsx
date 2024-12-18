@@ -8,6 +8,7 @@ interface WorkshopFormData {
     description: string;
     difficulty_level: string;
     price: number;
+    discount_price: number;
     classroom_info: string;
     address: string;
     map_location: string;
@@ -25,6 +26,7 @@ const AddWorkshop: React.FC = () => {
         description: "",
         difficulty_level: "beginner",
         price: 0,
+        discount_price: 0,
         classroom_info: "",
         address: "",
         map_location: "",
@@ -219,6 +221,17 @@ const AddWorkshop: React.FC = () => {
                             onChange={handleChange}
                             className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
                             required
+                        />
+                    </div>
+                    <div className="flex-1">
+                        <label htmlFor="discount_price" className="block text-sm font-medium text-gray-700">Discounted Price</label>
+                        <input
+                            id="discount_price"
+                            name="discount_price"
+                            type="number"
+                            value={formData.discount_price}
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-3 border border-gray-300 rounded-md"
                         />
                     </div>
                     <div className="flex-1">
